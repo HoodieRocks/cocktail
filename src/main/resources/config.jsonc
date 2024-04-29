@@ -1,0 +1,17 @@
+{
+  "configVersion": 2,
+  "packDownloader": {
+    // enable or disable the pack downloader
+    // can be disabled if you don't want to download
+    //any packs or override changes
+    "enabled": false,
+    // check for nested folders
+    // only turn this off if you know that no packs have a nested folder
+    // nested folders are packs where the root folder is inside another folder
+    "checkForNestedFolders": true
+  },
+  // add your datapacks here
+  "datapackUrls": {
+    "datapack-name-here": "https://put-your-page.here/"
+  }
+}
