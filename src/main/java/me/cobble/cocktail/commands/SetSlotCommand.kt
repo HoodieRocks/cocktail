@@ -1,29 +1,31 @@
 package me.cobble.cocktail.commands
 
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
+import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.context.CommandContext
-import net.minecraft.command.argument.EntityArgumentType
+import net.minecraft.command.argument.EntityArgumentType.getPlayer
+import net.minecraft.command.argument.EntityArgumentType.player
 import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket
-import net.minecraft.server.command.CommandManager
+import net.minecraft.server.command.CommandManager.argument
+import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
 object SetSlotCommand {
-  fun register(dispatcher: CommandDispatcher<ServerCommandSource?>) {
+  fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
     dispatcher.register(
-      CommandManager.literal("setslot")
+      literal("setslot")
         .then(
-          CommandManager.argument("entity", EntityArgumentType.player())
+          argument("entity", player())
             .then(
-              CommandManager.argument("slot", IntegerArgumentType.integer(0, 8))
+              argument("slot", integer(0, 8))
                 .executes { context: CommandContext<ServerCommandSource> ->
 
                   // get entity
-                  val entity =
-                    EntityArgumentType.getPlayer(context, "entity")
+                  val entity = getPlayer(context, "entity")
                   entity.networkHandler.sendPacket(
-                    UpdateSelectedSlotS2CPacket(IntegerArgumentType.getInteger(context, "slot"))
+                    UpdateSelectedSlotS2CPacket(getInteger(context, "slot"))
                   )
                   // send feedback
                   context
@@ -31,7 +33,7 @@ object SetSlotCommand {
                     .sendFeedback(
                       {
                         Text.of(
-                          "Set slot to " + IntegerArgumentType.getInteger(
+                          "Set slot to " + getInteger(
                             context,
                             "slot"
                           )

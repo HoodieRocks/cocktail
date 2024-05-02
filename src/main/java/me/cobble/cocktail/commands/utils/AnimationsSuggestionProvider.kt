@@ -7,7 +7,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import net.minecraft.server.command.ServerCommandSource
 import java.util.concurrent.CompletableFuture
 
-class AnimationsSuggestionProvider : SuggestionProvider<ServerCommandSource?> {
+class AnimationsSuggestionProvider : SuggestionProvider<ServerCommandSource> {
   override fun getSuggestions(
     context: CommandContext<ServerCommandSource?>, builder: SuggestionsBuilder
   ): CompletableFuture<Suggestions> {

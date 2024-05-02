@@ -4,16 +4,18 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.arguments.StringArgumentType.getString
+import com.mojang.brigadier.arguments.StringArgumentType.string
 import com.mojang.brigadier.context.CommandContext
-import net.minecraft.command.argument.CommandFunctionArgumentType
-import net.minecraft.command.argument.NbtCompoundArgumentType
-import net.minecraft.command.argument.NbtPathArgumentType
+import net.minecraft.command.argument.CommandFunctionArgumentType.commandFunction
+import net.minecraft.command.argument.CommandFunctionArgumentType.getFunctions
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.server.command.CommandManager
+import net.minecraft.server.command.CommandManager.argument
+import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.FunctionCommand
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -21,62 +23,75 @@ import java.net.http.HttpResponse
 import java.time.Duration
 
 object HTTPCommand {
+
+  val RESULT_REPORTER =
+    object : FunctionCommand.ResultConsumer<ServerCommandSource?> {
+      override fun accept(source: ServerCommandSource?, identifier: Identifier?, i: Int) {
+        source?.sendFeedback({
+          Text.translatable(
+            "commands.function.result",
+            *arrayOf(Text.of(identifier), i)
+          )
+        }, true)
+      }
+    }
+
   private val client: HttpClient = HttpClient.newBuilder()
     .version(HttpClient.Version.HTTP_2)
     .followRedirects(HttpClient.Redirect.ALWAYS)
     .build()
 
-  fun register(dispatcher: CommandDispatcher<ServerCommandSource?>) {
+  fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
     dispatcher.register(
-      CommandManager.literal("http").then(
-        CommandManager.literal("get").then(
-          CommandManager.argument("url", StringArgumentType.string()).then(
-            CommandManager.argument("source", NbtCompoundArgumentType.nbtCompound()).then(
-              CommandManager.argument("path", NbtPathArgumentType.nbtPath()).then(
-                CommandManager.argument("callback", CommandFunctionArgumentType.commandFunction())
-                  .suggests(FunctionCommand.SUGGESTION_PROVIDER)
-                  .executes { context: CommandContext<ServerCommandSource>? ->
-                    val url = URI.create(StringArgumentType.getString(context, "url"))
-                    val source = NbtCompoundArgumentType.getNbtCompound(context, "source")
-                    val path = NbtPathArgumentType.getNbtPath(context, "path")
-                    val callback = CommandFunctionArgumentType.getFunctions(context, "callback")
-                    val gson = Gson()
-
-                    val request = HttpRequest.newBuilder()
-                      .version(HttpClient.Version.HTTP_2)
-                      .uri(url)
-                      .headers("Accept", "application/json")
-                      .timeout(Duration.ofSeconds(10))
-                      .GET()
-                      .build()
-
-                    try {
-                      val response =
-                        client.send(request, HttpResponse.BodyHandlers.ofString())
-
-                      val body = response.body()
-                      val json = gson.fromJson(body, JsonObject::class.java)
-
-                      // convert json to nbt
-                      val compound = jsonToCompound(json)
-
-                      // apply nbt to source
-                      source.put(path.string, compound)
-
-                      // send feedback
-                      context?.source?.sendFeedback({ Text.of("Applied nbt to source") }, false)
-
-                      return@executes 1
-                    } catch (e: Exception) {
-                      e.printStackTrace()
-                    }
-                    1
-                  })
-            )
+      literal("http").then(
+        literal("get").then(
+          argument("url", string()).then(
+            argument("callback", commandFunction())
+              .suggests(FunctionCommand.SUGGESTION_PROVIDER)
+              .executes { apply(it) }
           )
-        )
+        ).requires { source: ServerCommandSource -> source.hasPermissionLevel(2) }
       )
     )
+  }
+
+  private fun apply(context: CommandContext<ServerCommandSource>): Int {
+    val url = URI.create(getString(context, "url"))
+    val callback = getFunctions(context, "callback")
+    val gson = Gson()
+
+    val request = HttpRequest.newBuilder()
+      .version(HttpClient.Version.HTTP_2)
+      .uri(url)
+      .headers("Accept", "application/json")
+      .timeout(Duration.ofSeconds(10))
+      .GET()
+      .build()
+
+    try {
+      val response =
+        client.send(request, HttpResponse.BodyHandlers.ofString())
+
+      val body = response.body()
+      val json = gson.fromJson(body, JsonObject::class.java)
+
+      // convert json to nbt
+      val compound = jsonToCompound(json)
+      val server = context.source.server
+
+      server.commandManager.executeWithPrefix(
+        server.commandSource.withSilent(),
+        "function ${callback.first().id()} $compound"
+      )
+
+      // send feedback
+      context.source.sendFeedback({ Text.of("Applied NBT to source") }, false)
+
+      return 1
+    } catch (e: Exception) {
+      e.printStackTrace()
+    }
+    return 1
   }
 
   /**
@@ -86,10 +101,10 @@ object HTTPCommand {
    */
   private fun jsonToCompound(json: JsonObject): NbtCompound {
     val nbtCompound = NbtCompound()
-    val jsonIterator: Iterator<*> = json.entrySet().iterator()
+    val jsonIterator = json.entrySet().iterator()
 
     while (jsonIterator.hasNext()) {
-      val entry: Map.Entry<String, JsonElement> = jsonIterator.next() as Map.Entry<String, JsonElement>
+      val entry: Map.Entry<String, JsonElement> = jsonIterator.next()
       val jsonElement = entry.value
       if (jsonElement.isJsonObject) {
         nbtCompound.put(entry.key, jsonToCompound(jsonElement.asJsonObject))

@@ -8,10 +8,9 @@ import kotlin.io.path.createParentDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeBytes
-import kotlin.io.path.writeText
 
 class ConfigIO {
-  private val internalConfig = this::class.java.classLoader.getResourceAsStream("config.jsonc")
+  private val internalConfig = javaClass.classLoader.getResourceAsStream("config.jsonc")
   private val configDir = FabricLoader.getInstance().configDir.resolve("cocktail")
   private val configPath = configDir.resolve("config.jsonc")
   private val logger = Cocktail.logger
@@ -43,13 +42,5 @@ class ConfigIO {
     logger.info("Config Data: {}", configData)
 
     return configData
-  }
-
-  fun saveConfig(configData: ConfigData) {
-    val gson = Gson()
-    val jsonString = gson.toJson(configData)
-    configPath.writeText(jsonString)
-
-    logger.info("Saved config to ${configPath.toAbsolutePath()}")
   }
 }

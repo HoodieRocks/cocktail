@@ -1,12 +1,15 @@
 package me.cobble.cocktail.commands
 
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.arguments.StringArgumentType.getString
+import com.mojang.brigadier.arguments.StringArgumentType.word
 import com.mojang.brigadier.context.CommandContext
 import me.cobble.cocktail.commands.utils.AnimationsSuggestionProvider
-import net.minecraft.command.argument.EntityArgumentType
+import net.minecraft.command.argument.EntityArgumentType.getPlayer
+import net.minecraft.command.argument.EntityArgumentType.player
 import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket
-import net.minecraft.server.command.CommandManager
+import net.minecraft.server.command.CommandManager.argument
+import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
@@ -19,19 +22,19 @@ object AnimateCommand {
    *
    * @param dispatcher The command dispatcher to register with.
    */
-  fun register(dispatcher: CommandDispatcher<ServerCommandSource?>) {
+  fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
     dispatcher.register(
-      CommandManager.literal("animate")
+      literal("animate")
         .then(
-          CommandManager.argument("entity", EntityArgumentType.player())
+          argument("entity", player())
             .then(
-              CommandManager.argument("animation", StringArgumentType.word())
+              argument("animation", word())
                 .suggests(AnimationsSuggestionProvider())
                 .executes { context: CommandContext<ServerCommandSource> ->
 
                   // get entity
-                  val player = EntityArgumentType.getPlayer(context, "entity")
-                  val animation = StringArgumentType.getString(context, "animation")
+                  val player = getPlayer(context, "entity")
+                  val animation = getString(context, "animation")
                   val animNumber = when (animation) {
                     "swing_main" -> 0
                     "damage" -> 1

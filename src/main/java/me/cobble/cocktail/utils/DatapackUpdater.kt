@@ -29,9 +29,13 @@ class DatapackUpdater(server: MinecraftServer) {
     .followRedirects(HttpClient.Redirect.ALWAYS)
     .build()
 
+  /**
+   * Runs the datapack updater process.
+   */
   fun run() {
     val config = Config.get()
 
+    // Check if datapack downloader is enabled
     if (!config.packDownloader.enabled) {
       log.warn("Datapack downloader is disabled! If you want to enable it, set 'pack-downloader.enabled' to true in config.jsonc")
       return
@@ -40,35 +44,44 @@ class DatapackUpdater(server: MinecraftServer) {
     log.info("Starting datapack updater...")
 
     try {
+      // Process each datapack URL
       config.datapackUrls.entries.forEach { (packName, packUrl) ->
 
         log.info("Downloading [{}]", packName)
+        // Create HTTP request for the pack URL
         val request = HttpRequest.newBuilder()
           .uri(URI.create(packUrl))
           .GET()
           .timeout(Duration.ofSeconds(30))
           .build()
 
+        // Send the HTTP request and get the response
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
 
+        // Define the file path to save the downloaded pack
         val packFilePath = datapackPath.resolve("$packName.zip")
 
+        // Download the pack file
         BufferedOutputStream(FileOutputStream(packFilePath.toFile())).use { fos ->
           response.body().transferTo(fos)
         }
         log.info("Downloaded successfully!")
 
+        // Check for nested folders in the downloaded pack
         if (config.packDownloader.checkForNestedFolders) {
-          log.info("Initalizing nested folder check for [{}]", packName)
+          log.info("Initializing nested folder check for [{}]", packName)
           log.info("[NFC] Unzipping {}", packName)
           val tempDir = unzip(packFilePath)
 
+          // Move resources to the root directory
           log.info("[NFC] Moving resources to root...")
           moveResourcesIfFound(tempDir, datapackPath)
 
+          // Delete nested folders if needed
           log.info("[NFC] Deleting nested folders (if needed)...")
           cleanNoNestingCopies(tempDir)
 
+          // Move contents to the root directory
           log.info("[NFC] Moving contents to root...")
           moveContentsToParent(tempDir, datapackPath.resolve(packName))
 
@@ -82,17 +95,30 @@ class DatapackUpdater(server: MinecraftServer) {
     }
   }
 
+  /**
+   * Unzips a pack zip file to a temporary directory.
+   *
+   * @param packZip The path to the pack zip file.
+   * @return The path to the temporary directory where the pack zip file was unzipped.
+   */
   private fun unzip(packZip: Path): Path {
+    // Extract the pack name from the zip file name
     val packName = packZip.toFile().name.substring(0, packZip.toFile().name.length - 4)
+
+    // Create the temporary directory path
     val destDir = datapackPath.resolve("$packName-temp")
 
     try {
+      // Open the zip file and unzip it to the temporary directory
       ZipInputStream(FileInputStream(packZip.toFile())).use { zis ->
         unzipFile(destDir, zis)
       }
     } catch (e: IOException) {
+      // Log an error if an I/O exception occurs while unzipping the file
       log.error("An error occurred while unzipping {}", packName, e)
     }
+
+    // Return the path to the temporary directory
     return destDir
   }
 
@@ -108,25 +134,15 @@ class DatapackUpdater(server: MinecraftServer) {
     // Buffer for reading the zip file
     val buffer = ByteArray(4096)
 
-    // Get the next entry in the zip file
     var ze = zis.nextEntry
-
-    // Loop through each entry in the zip file
     while (ze != null) {
-      // Create the new file in the destination directory
       val newFile = newFile(destDir.toFile(), ze)
 
-      // If the entry is a directory
       if (ze.isDirectory) {
-        // If the directory doesn't already exist, create it
         if (!newFile.isDirectory && !newFile.mkdirs()) {
           throw IOException("Failed to create directory $newFile")
         }
       } else {
-        // If the entry is a file
-
-        // Create the parent directory if it doesn't already exist
-
         val parent = newFile.parentFile
         if (!parent.isDirectory && !parent.mkdirs()) {
           throw IOException("Failed to create directory $parent")
@@ -181,7 +197,6 @@ class DatapackUpdater(server: MinecraftServer) {
   @Throws(IOException::class)
   fun moveResourcesIfFound(targetFile: Path, destDir: Path) {
     // Get the list of files in the directory
-
     val dirs = targetFile.toFile().listFiles() ?: return
 
     // Check if any files in the root directory contain "resources"

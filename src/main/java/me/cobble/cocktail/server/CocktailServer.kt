@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher
 import me.cobble.cocktail.Cocktail
 import me.cobble.cocktail.commands.AnimateCommand
 import me.cobble.cocktail.commands.ComplimentCommand
+import me.cobble.cocktail.commands.HTTPCommand
 import me.cobble.cocktail.commands.SetSlotCommand
 import me.cobble.cocktail.commands.TargetCommand
 import me.cobble.cocktail.commands.VelocityCommand
@@ -20,6 +21,7 @@ import net.minecraft.server.command.ServerCommandSource
 import org.slf4j.Logger
 
 class CocktailServer : DedicatedServerModInitializer {
+
   override fun onInitializeServer() {
     sideAgnosticInitialize()
   }
@@ -30,13 +32,13 @@ class CocktailServer : DedicatedServerModInitializer {
     fun sideAgnosticInitialize() {
       log.info("Loading commands...")
 
-      CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource?>, registry: CommandRegistryAccess?, _: RegistrationEnvironment? ->
+      CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource>, _: CommandRegistryAccess?, _: RegistrationEnvironment? ->
         VelocityCommand.register(dispatcher)
         TargetCommand.register(dispatcher)
         SetSlotCommand.register(dispatcher)
         AnimateCommand.register(dispatcher)
         ComplimentCommand.register(dispatcher)
-        // HTTPCommand.register(dispatcher)
+        HTTPCommand.register(dispatcher)
       })
 
       ServerLifecycleEvents.SERVER_STARTING.register(ServerStarting { server: MinecraftServer ->

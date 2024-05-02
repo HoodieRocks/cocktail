@@ -2,10 +2,12 @@ package me.cobble.cocktail.commands
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
-import net.minecraft.command.argument.EntityArgumentType
+import net.minecraft.command.argument.EntityArgumentType.entity
+import net.minecraft.command.argument.EntityArgumentType.getEntity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.mob.MobEntity
-import net.minecraft.server.command.CommandManager
+import net.minecraft.server.command.CommandManager.argument
+import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
@@ -18,20 +20,20 @@ object TargetCommand {
    *
    * @param dispatcher the command dispatcher
    */
-  fun register(dispatcher: CommandDispatcher<ServerCommandSource?>) {
+  fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
     dispatcher.register(
-      CommandManager.literal("target")
+      literal("target")
         .then(
-          CommandManager.argument("entity", EntityArgumentType.entity())
+          argument("entity", entity())
             .then(
-              CommandManager.literal("set")
+              literal("set")
                 .then(
-                  CommandManager.argument("target", EntityArgumentType.entity())
+                  argument("target", entity())
                     .executes { context: CommandContext<ServerCommandSource> ->
 
                       // get entity
-                      val entity = EntityArgumentType.getEntity(context, "entity")
-                      val target = EntityArgumentType.getEntity(context, "target")
+                      val entity = getEntity(context, "entity")
+                      val target = getEntity(context, "target")
 
                       if (target !is LivingEntity) {
                         context
@@ -60,11 +62,11 @@ object TargetCommand {
                     })
             )
             .then(
-              CommandManager.literal("clear")
+              literal("clear")
                 .executes { context: CommandContext<ServerCommandSource> ->
 
                   // get entity
-                  val entity = EntityArgumentType.getEntity(context, "entity")
+                  val entity = getEntity(context, "entity")
                   if (entity is MobEntity) {
                     // clear target
                     entity.target = null
