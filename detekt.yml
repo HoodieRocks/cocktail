@@ -1,0 +1,8 @@
+complexity:
+  NestedBlockDepth:
+    threshold: 5
+  LongMethod:
+    threshold: 100
+style:
+  MagicNumber:
+    active: false

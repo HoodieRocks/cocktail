@@ -14,9 +14,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarted
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.ServerStarting
-import net.minecraft.command.CommandRegistryAccess
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.command.CommandManager.RegistrationEnvironment
 import net.minecraft.server.command.ServerCommandSource
 import org.slf4j.Logger
 
@@ -32,14 +30,14 @@ class CocktailServer : DedicatedServerModInitializer {
     fun sideAgnosticInitialize() {
       log.info("Loading commands...")
 
-      CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource>, _: CommandRegistryAccess?, _: RegistrationEnvironment? ->
+      CommandRegistrationCallback.EVENT.register { dispatcher: CommandDispatcher<ServerCommandSource>, _, _ ->
         VelocityCommand.register(dispatcher)
         TargetCommand.register(dispatcher)
         SetSlotCommand.register(dispatcher)
         AnimateCommand.register(dispatcher)
         ComplimentCommand.register(dispatcher)
         HTTPCommand.register(dispatcher)
-      })
+      }
 
       ServerLifecycleEvents.SERVER_STARTING.register(ServerStarting { server: MinecraftServer ->
         val updater = DatapackUpdater(server)

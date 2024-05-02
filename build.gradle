@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'org.jetbrains.kotlin.jvm'
+    id("io.gitlab.arturbosch.detekt").version("1.23.6")
 }
 
 version = project.mod_version
@@ -73,4 +74,10 @@ jar {
 }
 kotlin {
     jvmToolchain(21)
+}
+
+detekt {
+    buildUponDefaultConfig = true // preconfigure defaults
+    allRules = false // activate all available (even unstable) rules.
+    config = files("detekt.yml") // point to your custom config defining rules to run, overwriting default behavior
 }

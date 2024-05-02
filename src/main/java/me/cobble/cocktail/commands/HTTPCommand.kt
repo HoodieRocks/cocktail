@@ -24,18 +24,6 @@ import java.time.Duration
 
 object HTTPCommand {
 
-  val RESULT_REPORTER =
-    object : FunctionCommand.ResultConsumer<ServerCommandSource?> {
-      override fun accept(source: ServerCommandSource?, identifier: Identifier?, i: Int) {
-        source?.sendFeedback({
-          Text.translatable(
-            "commands.function.result",
-            *arrayOf(Text.of(identifier), i)
-          )
-        }, true)
-      }
-    }
-
   private val client: HttpClient = HttpClient.newBuilder()
     .version(HttpClient.Version.HTTP_2)
     .followRedirects(HttpClient.Redirect.ALWAYS)
@@ -68,29 +56,23 @@ object HTTPCommand {
       .GET()
       .build()
 
-    try {
-      val response =
-        client.send(request, HttpResponse.BodyHandlers.ofString())
+    val response = client.send(request, HttpResponse.BodyHandlers.ofString())
 
-      val body = response.body()
-      val json = gson.fromJson(body, JsonObject::class.java)
+    val body = response.body()
+    val json = gson.fromJson(body, JsonObject::class.java)
 
-      // convert json to nbt
-      val compound = jsonToCompound(json)
-      val server = context.source.server
+    // convert json to nbt
+    val compound = jsonToCompound(json)
+    val server = context.source.server
 
-      server.commandManager.executeWithPrefix(
-        server.commandSource.withSilent(),
-        "function ${callback.first().id()} $compound"
-      )
+    server.commandManager.executeWithPrefix(
+      server.commandSource.withSilent(),
+      "function ${callback.first().id()} $compound"
+    )
 
-      // send feedback
-      context.source.sendFeedback({ Text.of("Applied NBT to source") }, false)
+    // send feedback
+    context.source.sendFeedback({ Text.of("Applied NBT to source") }, false)
 
-      return 1
-    } catch (e: Exception) {
-      e.printStackTrace()
-    }
     return 1
   }
 

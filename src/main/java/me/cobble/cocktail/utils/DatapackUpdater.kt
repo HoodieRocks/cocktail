@@ -37,7 +37,7 @@ class DatapackUpdater(server: MinecraftServer) {
 
     // Check if datapack downloader is enabled
     if (!config.packDownloader.enabled) {
-      log.warn("Datapack downloader is disabled! If you want to enable it, set 'pack-downloader.enabled' to true in config.jsonc")
+      log.warn("Datapack downloader is disabled! Enable it in cocktail/config.jsonc")
       return
     }
 
@@ -168,29 +168,24 @@ class DatapackUpdater(server: MinecraftServer) {
    */
   private fun cleanNoNestingCopies(tempDir: Path) {
     // Get the list of files in the temporary directory
-    try {
-      Files.list(tempDir).use { dirs ->
-        if (dirs == null || dirs.count() <= 1) {
+    Files.list(tempDir).use { dirs ->
+      if (dirs == null || dirs.count() <= 1) {
+        return
+      }
+      Files.list(datapackPath).use { allPacks ->
+        val fileName = tempDir.fileName.toString()
+        val compressedFileName = fileName.substring(0, fileName.length - 5) + ".zip"
+        log.info("Cleaning up {}", compressedFileName)
+        if (allPacks.noneMatch { f: Path -> f.fileName.toString() == compressedFileName }) {
           return
         }
-        Files.list(datapackPath).use { allPacks ->
-          val fileName = tempDir.fileName.toString()
-          val compressedFileName = fileName.substring(0, fileName.length - 5) + ".zip"
-          log.info("Cleaning up {}", compressedFileName)
-          if (allPacks.noneMatch { f: Path -> f.fileName.toString() == compressedFileName }) {
-            return
-          }
-          Files.walk(tempDir).use { walk ->
-            // Sort the files in reverse order and delete each file
-            walk.sorted(Comparator.reverseOrder())
-              .map { obj: Path -> obj.toFile() }
-              .forEach { obj: File -> obj.delete() }
-          }
+        Files.walk(tempDir).use { walk ->
+          // Sort the files in reverse order and delete each file
+          walk.sorted(Comparator.reverseOrder())
+            .map { obj: Path -> obj.toFile() }
+            .forEach { obj: File -> obj.delete() }
         }
       }
-    } catch (e: IOException) {
-      // Handle the exception
-      log.error("An error occurred while cleaning up", e)
     }
   }
 
