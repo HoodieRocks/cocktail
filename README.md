@@ -25,8 +25,8 @@ Single player and server support!
 ...And more to come!
 
 ## Credits
-@HoodieRocks - the main developer of the project
+[`@HoodieRocks`](https://github.com/HoodieRocks) - the main developer of the project
 
-@Datapack-Hub - Suggestions for additions, inspiration
+[`@Datapack-Hub`](https://github.com/Datapack-Hub)  - Suggestions for additions, inspiration
 
-@Sleet827 - Command advisor, help on the `/http` command
+[`@Sleet827`](https://github.com/Sleet827)  - Command advisor, help on the `/http` command
