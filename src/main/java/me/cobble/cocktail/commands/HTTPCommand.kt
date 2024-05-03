@@ -15,7 +15,6 @@ import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.FunctionCommand
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
