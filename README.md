@@ -4,7 +4,7 @@
 ![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/cocktail-fabric)
 ![GitHub License](https://img.shields.io/github/license/HoodieRocks/cocktail)
 
-A Fabric Mod designed to expand the power of Minecraft Datapacks and make it more convenient to develop for.
+A Fabric Mod designed to expand Minecraft Datapacks' power and make them more convenient to develop.
 
 ## Features
 
@@ -25,8 +25,8 @@ Single player and server support!
 ...And more to come!
 
 ## Credits
-`@HoodieRocks` - the main developer of the project
+@HoodieRocks - the main developer of the project
 
-`@Datapack-Hub` - Suggestions for additions, inspiration
+@Datapack-Hub - Suggestions for additions, inspiration
 
-`@Sleet827` - Command advisor, help on the `/http` command
+@Sleet827 - Command advisor, help on the `/http` command
