@@ -106,12 +106,12 @@ class DatapackUpdater(server: MinecraftServer) {
     val packName = packZip.toFile().name.substring(0, packZip.toFile().name.length - 4)
 
     // Create the temporary directory path
-    val destDir = datapackPath.resolve("$packName-temp")
+    val destinationDir = datapackPath.resolve("$packName-temp")
 
     try {
       // Open the zip file and unzip it to the temporary directory
       ZipInputStream(FileInputStream(packZip.toFile())).use { zis ->
-        unzipFile(destDir, zis)
+        unzipFile(destinationDir, zis)
       }
     } catch (e: IOException) {
       // Log an error if an I/O exception occurs while unzipping the file
@@ -119,24 +119,24 @@ class DatapackUpdater(server: MinecraftServer) {
     }
 
     // Return the path to the temporary directory
-    return destDir
+    return destinationDir
   }
 
   /**
    * Unzips a file to a destination directory.
    *
-   * @param destDir The directory to unzip the file to.
+   * @param destinationDir The directory to unzip the file to.
    * @param zis     The ZipInputStream containing the file to unzip.
    * @throws IOException If an I/O error occurs while unzipping the file.
    */
   @Throws(IOException::class)
-  fun unzipFile(destDir: Path, zis: ZipInputStream) {
+  fun unzipFile(destinationDir: Path, zis: ZipInputStream) {
     // Buffer for reading the zip file
     val buffer = ByteArray(4096)
 
     var ze = zis.nextEntry
     while (ze != null) {
-      val newFile = newFile(destDir.toFile(), ze)
+      val newFile = newFile(destinationDir.toFile(), ze)
 
       if (ze.isDirectory) {
         if (!newFile.isDirectory && !newFile.mkdirs()) {
@@ -190,7 +190,7 @@ class DatapackUpdater(server: MinecraftServer) {
   }
 
   @Throws(IOException::class)
-  fun moveResourcesIfFound(targetFile: Path, destDir: Path) {
+  fun moveResourcesIfFound(targetFile: Path, destinationDir: Path) {
     // Get the list of files in the directory
     val dirs = targetFile.toFile().listFiles() ?: return
 
@@ -199,8 +199,8 @@ class DatapackUpdater(server: MinecraftServer) {
       if (file.name.contains("resources")) {
         // Move the resources file out of the root directory
         val targetResourcesFile = targetFile.resolve(file.name)
-        log.info("Moving {} to {}", targetResourcesFile, destDir)
-        Files.move(targetResourcesFile, destDir.resolve(file.name), StandardCopyOption.REPLACE_EXISTING)
+        log.info("Moving {} to {}", targetResourcesFile, destinationDir)
+        Files.move(targetResourcesFile, destinationDir.resolve(file.name), StandardCopyOption.REPLACE_EXISTING)
       }
     }
   }
@@ -211,11 +211,11 @@ class DatapackUpdater(server: MinecraftServer) {
    * If the parent directory does not contain a directory, it will create one.
    *
    * @param targetFile The file to be deleted if the contents of the directory cannot be moved.
-   * @param destDir    The directory whose contents will be moved to its parent directory.
+   * @param destinationDir    The directory whose contents will be moved to its parent directory.
    * @throws IOException If an I/O error occurs when deleting or moving files.
    */
   @Throws(IOException::class)
-  private fun moveContentsToParent(targetFile: Path, destDir: Path) {
+  private fun moveContentsToParent(targetFile: Path, destinationDir: Path) {
     // Get the list of files in the directory
 
     val dirs = targetFile.toFile().listFiles()
@@ -225,21 +225,21 @@ class DatapackUpdater(server: MinecraftServer) {
       val path = dirs[0]
       val targetSubDir = datapackPath.resolve(path.name)
 
-      Files.move(targetSubDir, destDir, StandardCopyOption.REPLACE_EXISTING)
+      Files.move(targetSubDir, destinationDir, StandardCopyOption.REPLACE_EXISTING)
     }
   }
 
   companion object {
     @Throws(IOException::class)
     private fun newFile(destinationDir: File, zipEntry: ZipEntry): File {
-      val destFile = File(destinationDir, zipEntry.name)
-      val destDirPath = destinationDir.canonicalPath
-      val destFilePath = destFile.canonicalPath
+      val file = File(destinationDir, zipEntry.name)
+      val dirPath = destinationDir.canonicalPath
+      val filePath = file.canonicalPath
 
-      if (!destFilePath.startsWith(destDirPath + File.separator)) {
+      if (!filePath.startsWith(dirPath + File.separator)) {
         throw IOException("Entry is outside of the target dir: " + zipEntry.name)
       }
-      return destFile
+      return file
     }
   }
 }
