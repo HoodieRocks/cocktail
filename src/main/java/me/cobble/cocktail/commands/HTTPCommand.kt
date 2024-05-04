@@ -21,6 +21,14 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 
+/*
+█████ █   █  ███  █   █ █  █   █   █  ███  █   █   █████ █     █████ █████ █████ 
+  █   █   █ █   █ ██  █ █ █     █ █  █   █ █   █   █     █     █     █       █   
+  █   █████ █████ █ █ █ ███      █   █   █ █   █   █████ █     ████  ████    █   
+  █   █   █ █   █ █  ██ █  █     █   █   █ █   █       █ █     █     █       █   
+  █   █   █ █   █ █   █ █   █    █    ███  █████   █████ █████ █████ █████   █   
+*/
+
 object HTTPCommand {
 
   private val client: HttpClient = HttpClient.newBuilder()
