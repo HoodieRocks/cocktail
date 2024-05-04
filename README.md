@@ -22,7 +22,7 @@ See `config.jsonc` for more information
 ### Single-player and server support!
 The mod is not required on the client to join
 
-...And more to come!
+...And more to come!!
 
 ## Credits
 - [`@HoodieRocks`](https://github.com/HoodieRocks) - the main developer of the project
