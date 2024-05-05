@@ -43,7 +43,7 @@ object AnimateCommand {
                     "crit" -> 4
                     "magic_crit" -> 5
                     else -> {
-                      context.source.sendError(Text.of("Invalid animation!"))
+                      context.source.sendError(Text.translatable("command.animate.invalid"))
                       return@executes 0
                     }
                   }
@@ -52,7 +52,7 @@ object AnimateCommand {
                   )
                   context
                     .source
-                    .sendFeedback({ Text.of("Playing Animation!") }, false)
+                    .sendFeedback({ Text.translatable("command.animate.success") }, false)
                   1
                 })
         )

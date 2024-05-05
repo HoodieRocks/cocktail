@@ -15,7 +15,7 @@ object ComplimentCommand {
   fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
     dispatcher.register(literal("compliment")
       .executes { context: CommandContext<ServerCommandSource> ->
-        context.source.sendFeedback({ Text.of("You look great today :]") }, false)
+        context.source.sendFeedback({ Text.translatable("command.compliment.compliment") }, false)
         1
       }
       .requires { source: ServerCommandSource -> source.hasPermissionLevel(2) })

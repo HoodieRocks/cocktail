@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Cocktail.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Cocktail.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Cocktail.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Cocktail.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cocktail-fabric.main.iml" filepath="$PROJECT_DIR$/.idea/modules/cocktail-fabric.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cocktail-fabric.test.iml" filepath="$PROJECT_DIR$/.idea/modules/cocktail-fabric.test.iml" />
     </modules>
   </component>
 </project>

@@ -21,22 +21,19 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 
-/*
-
-████████╗██╗░░██╗░█████╗░███╗░░██╗██╗░░██╗  ██╗░░░██╗░█████╗░██╗░░░██╗
-╚══██╔══╝██║░░██║██╔══██╗████╗░██║██║░██╔╝  ╚██╗░██╔╝██╔══██╗██║░░░██║
-░░░██║░░░███████║███████║██╔██╗██║█████═╝░  ░╚████╔╝░██║░░██║██║░░░██║
-░░░██║░░░██╔══██║██╔══██║██║╚████║██╔═██╗░  ░░╚██╔╝░░██║░░██║██║░░░██║
-░░░██║░░░██║░░██║██║░░██║██║░╚███║██║░╚██╗  ░░░██║░░░╚█████╔╝╚██████╔╝
-░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝  ░░░╚═╝░░░░╚════╝░░╚═════╝░
-
-░██████╗██╗░░░░░███████╗███████╗████████╗██╗
-██╔════╝██║░░░░░██╔════╝██╔════╝╚══██╔══╝██║
-╚█████╗░██║░░░░░█████╗░░█████╗░░░░░██║░░░██║
-░╚═══██╗██║░░░░░██╔══╝░░██╔══╝░░░░░██║░░░╚═╝
-██████╔╝███████╗███████╗███████╗░░░██║░░░██╗
-╚═════╝░╚══════╝╚══════╝╚══════╝░░░╚═╝░░░╚═╝
-*/
+//████████╗██╗░░██╗░█████╗░███╗░░██╗██╗░░██╗░░░░██╗░░░██╗░█████╗░██╗░░░██╗
+//╚══██╔══╝██║░░██║██╔══██╗████╗░██║██║░██╔╝░░░░╚██╗░██╔╝██╔══██╗██║░░░██║
+//░░░██║░░░███████║███████║██╔██╗██║█████═╝░░░░░░╚████╔╝░██║░░██║██║░░░██║
+//░░░██║░░░██╔══██║██╔══██║██║╚████║██╔═██╗░░░░░░░╚██╔╝░░██║░░██║██║░░░██║
+//░░░██║░░░██║░░██║██║░░██║██║░╚███║██║░╚██╗░░░░░░░██║░░░╚█████╔╝╚██████╔╝
+//░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░╚══╝╚═╝░░╚═╝░░░░░░░╚═╝░░░░╚════╝░░╚═════╝░
+//
+//░██████╗██╗░░░░░███████╗███████╗████████╗██╗
+//██╔════╝██║░░░░░██╔════╝██╔════╝╚══██╔══╝██║
+//╚█████╗░██║░░░░░█████╗░░█████╗░░░░░██║░░░██║
+//░╚═══██╗██║░░░░░██╔══╝░░██╔══╝░░░░░██║░░░╚═╝
+//██████╔╝███████╗███████╗███████╗░░░██║░░░██╗
+//╚═════╝░╚══════╝╚══════╝╚══════╝░░░╚═╝░░░╚═╝
 
 object HTTPCommand {
 
@@ -74,20 +71,29 @@ object HTTPCommand {
 
     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
 
+    val status = response.statusCode()
+
+    // Status code is not in the OK ranges
+    if(!status.toString().startsWith("2")) {
+      context.source.sendError(Text.translatable("command.http.status_not_ok"))
+      return 0
+    }
+
     val body = response.body()
     val json = gson.fromJson(body, JsonObject::class.java)
 
     // convert json to nbt
     val compound = jsonToCompound(json)
     val server = context.source.server
+    val function = callback.first().id()
 
     server.commandManager.executeWithPrefix(
       server.commandSource.withSilent(),
-      "function ${callback.first().id()} $compound"
+      "function $function $compound"
     )
 
     // send feedback
-    context.source.sendFeedback({ Text.of("Applied NBT to source") }, false)
+    context.source.sendFeedback({ Text.translatable("command.http.success", function.toString()) }, false)
 
     return 1
   }

@@ -38,9 +38,7 @@ object TargetCommand {
                       if (target !is LivingEntity) {
                         context
                           .source
-                          .sendError(
-                            Text.of("Target must be a living entity!")
-                          )
+                          .sendError(Text.translatable("command.target.not_alive"))
                         return@executes 0
                       }
                       if (entity is MobEntity) {
@@ -49,14 +47,14 @@ object TargetCommand {
                         context
                           .source
                           .sendFeedback(
-                            { Text.of("Set target to " + target.getDisplayName() + "!") },
+                            { Text.translatable("command.target.success.set", target.getDisplayName()) },
                             false
                           )
                         return@executes 1
                       } else {
                         context
                           .source
-                          .sendError(Text.of("Entity must be a mob entity!"))
+                          .sendError(Text.translatable("command.target.not_mob"))
                         return@executes 0
                       }
                     })
@@ -72,12 +70,12 @@ object TargetCommand {
                     entity.target = null
                     context
                       .source
-                      .sendFeedback({ Text.of("Cleared target!") }, false)
+                      .sendFeedback({ Text.translatable("command.target.success.clear") }, false)
                     return@executes 1
                   } else {
                     context
                       .source
-                      .sendError(Text.of("Entity must be a mob entity!"))
+                      .sendError(Text.translatable("command.target.not_mob"))
                     return@executes 0
                   }
                 })

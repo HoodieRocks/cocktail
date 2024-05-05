@@ -17,30 +17,21 @@ object SetSlotCommand {
     dispatcher.register(
       literal("setslot")
         .then(
-          argument("entity", player())
+          argument("player", player())
             .then(
               argument("slot", integer(0, 8))
                 .executes { context: CommandContext<ServerCommandSource> ->
 
                   // get entity
-                  val entity = getPlayer(context, "entity")
-                  entity.networkHandler.sendPacket(
+                  val player = getPlayer(context, "player")
+                  player.networkHandler.sendPacket(
                     UpdateSelectedSlotS2CPacket(getInteger(context, "slot"))
                   )
+
+                  val slot = getInteger(context, "slot")
+
                   // send feedback
-                  context
-                    .source
-                    .sendFeedback(
-                      {
-                        Text.of(
-                          "Set slot to " + getInteger(
-                            context,
-                            "slot"
-                          )
-                        )
-                      },
-                      false
-                    )
+                  context.source.sendFeedback({ Text.translatable("command.setslot.success", slot) }, false)
                   1
                 })
         )

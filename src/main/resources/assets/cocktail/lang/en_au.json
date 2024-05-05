@@ -1,0 +1,14 @@
+{
+  "command.animate.invalid": "Invalid Animation!",
+  "command.animate.success": "Playing Animation...",
+  "command.compliment.compliment": "You look great today :]",
+  "command.http.success": "Sent the result to %s!",
+  "command.http.status_not_ok": "URL returned an error code, discarding!",
+  "command.setslot.success": "Set slot to %s!",
+  "command.target.not_alive": "Must be a living entity!",
+  "command.target.not_mob": "Must be a hostile mob!",
+  "command.target.success.set": "Set target to %s!",
+  "command.target.success.clear": "Cleared target!",
+  "command.velocity.no_entity": "No entity!",
+  "command.velocity.success": "Applied velocity!"
+}

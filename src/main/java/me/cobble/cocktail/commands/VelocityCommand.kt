@@ -32,7 +32,7 @@ object VelocityCommand {
                           if (entity == null) {
                             context
                               .source
-                              .sendError(Text.of("No entity found!"))
+                              .sendError(Text.translatable("command.velocity.no_entity"))
                             return@executes 0
                           }
 
@@ -50,7 +50,7 @@ object VelocityCommand {
                           context
                             .source
                             .sendFeedback(
-                              { Text.of("Applied velocity!") },
+                              { Text.translatable("command.velocity.success") },
                               false
                             )
                           1
@@ -75,7 +75,7 @@ object VelocityCommand {
                           if (entity == null) {
                             context
                               .source
-                              .sendError(Text.of("No entity found!"))
+                              .sendError(Text.translatable("command.velocity.no_entity"))
                             return@executes 0
                           }
 
@@ -114,7 +114,7 @@ object VelocityCommand {
                           context
                             .source
                             .sendFeedback(
-                              { Text.of("Applied velocity!") },
+                              { Text.translatable("command.velocity.success") },
                               false
                             )
                           1
