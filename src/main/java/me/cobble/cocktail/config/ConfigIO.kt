@@ -39,8 +39,6 @@ class ConfigIO {
     val configContent = configPath.readText()
     val configData = gson.fromJson(configContent, ConfigData::class.java)
 
-    logger.info("Config Data: {}", configData)
-
     return configData
   }
 }
