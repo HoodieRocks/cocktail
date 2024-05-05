@@ -20,6 +20,8 @@ import java.nio.file.StandardCopyOption
 import java.time.Duration
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
 
 class DatapackUpdater(server: MinecraftServer) {
   private val datapackPath: Path = server.getSavePath(WorldSavePath.DATAPACKS)
@@ -103,7 +105,7 @@ class DatapackUpdater(server: MinecraftServer) {
    */
   private fun unzip(packZip: Path): Path {
     // Extract the pack name from the zip file name
-    val packName = packZip.toFile().name.substring(0, packZip.toFile().name.length - 4)
+    val packName = packZip.nameWithoutExtension
 
     // Create the temporary directory path
     val destinationDir = datapackPath.resolve("$packName-temp")
@@ -173,10 +175,10 @@ class DatapackUpdater(server: MinecraftServer) {
         return
       }
       Files.list(datapackPath).use { allPacks ->
-        val fileName = tempDir.fileName.toString()
-        val compressedFileName = fileName.substring(0, fileName.length - 5) + ".zip"
+        val fileName = tempDir.nameWithoutExtension
+        val compressedFileName = fileName.dropLast(5) + ".zip"
         log.info("Cleaning up {}", compressedFileName)
-        if (allPacks.noneMatch { f: Path -> f.fileName.toString() == compressedFileName }) {
+        if (allPacks.noneMatch { f: Path -> f.name == compressedFileName }) {
           return
         }
         Files.walk(tempDir).use { walk ->
