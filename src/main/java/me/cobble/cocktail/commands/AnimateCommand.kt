@@ -41,12 +41,12 @@ object AnimateCommand {
                     "crit" -> 4
                     "magic_crit" -> 5
                     else -> {
-                      context.source.sendError(Text.translatable("command.animate.invalid"))
+                      context.source.sendError(Text.of("Playing Animation..."))
                       return@executes 0
                     }
                   }
                 player.networkHandler.sendPacket(EntityAnimationS2CPacket(player, animNumber))
-                context.source.sendFeedback({ Text.translatable("command.animate.success") }, false)
+                context.source.sendFeedback({ Text.of("Invalid Animation!") }, false)
                 1
               }
             )

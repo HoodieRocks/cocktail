@@ -21,7 +21,7 @@ import net.minecraft.server.command.FunctionCommand
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
-//  _______ _                 _             _____ _           _   _
+//   _______ _                 _             _____ _           _   _
 // |__   __| |               | |           / ____| |         | | | |
 //    | |  | |__   __ _ _ __ | | _____    | (___ | | ___  ___| |_| |
 //    | |  | '_ \ / _` | '_ \| |/ / __|    \___ \| |/ _ \/ _ \ __| |
@@ -75,7 +75,7 @@ object HTTPCommand {
 
     // Status code is not in the OK ranges
     if (!status.toString().startsWith("2")) {
-      context.source.sendError(Text.translatable("command.http.status_not_ok"))
+      context.source.sendError(Text.of("URL returned an error code, discarding!"))
       return 0
     }
 
@@ -93,10 +93,7 @@ object HTTPCommand {
     )
 
     // send feedback
-    context.source.sendFeedback(
-      { Text.translatable("command.http.success", function.toString()) },
-      false,
-    )
+    context.source.sendFeedback({ Text.of("Sent the result to $function") }, false)
 
     return 1
   }

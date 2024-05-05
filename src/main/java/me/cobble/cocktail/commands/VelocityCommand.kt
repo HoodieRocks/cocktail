@@ -30,7 +30,7 @@ object VelocityCommand {
                         // Check if the entity is null, if so send an
                         // error message
                         if (entity == null) {
-                          context.source.sendError(Text.translatable("command.velocity.no_entity"))
+                          context.source.sendError(Text.of("No entity!"))
                           return@executes 0
                         }
 
@@ -45,10 +45,7 @@ object VelocityCommand {
 
                         // Send feedback that the velocity has been
                         // applied
-                        context.source.sendFeedback(
-                          { Text.translatable("command.velocity.success") },
-                          false,
-                        )
+                        context.source.sendFeedback({ Text.of("Applied velocity!") }, false)
                         1
                       }
                     )
@@ -70,7 +67,7 @@ object VelocityCommand {
                         // Check if the entity is null, if so send an
                         // error message
                         if (entity == null) {
-                          context.source.sendError(Text.translatable("command.velocity.no_entity"))
+                          context.source.sendError(Text.of("No entity!"))
                           return@executes 0
                         }
 
@@ -99,10 +96,7 @@ object VelocityCommand {
 
                         // Send feedback that the velocity has been
                         // applied
-                        context.source.sendFeedback(
-                          { Text.translatable("command.velocity.success") },
-                          false,
-                        )
+                        context.source.sendFeedback({ Text.of("Applied velocity!") }, false)
                         1
                       }
                     )

@@ -34,21 +34,19 @@ object TargetCommand {
                     val target = getEntity(context, "target")
 
                     if (target !is LivingEntity) {
-                      context.source.sendError(Text.translatable("command.target.not_alive"))
+                      context.source.sendError(Text.of("Must be a living entity!"))
                       return@executes 0
                     }
                     if (entity is MobEntity) {
                       // set target
                       entity.target = target
                       context.source.sendFeedback(
-                        {
-                          Text.translatable("command.target.success.set", target.getDisplayName())
-                        },
+                        { Text.of("Set target to ${target.displayName}!") },
                         false,
                       )
                       return@executes 1
                     } else {
-                      context.source.sendError(Text.translatable("command.target.not_mob"))
+                      context.source.sendError(Text.of("Must be a hostile mob!"))
                       return@executes 0
                     }
                   }
@@ -62,13 +60,10 @@ object TargetCommand {
                 if (entity is MobEntity) {
                   // clear target
                   entity.target = null
-                  context.source.sendFeedback(
-                    { Text.translatable("command.target.success.clear") },
-                    false,
-                  )
+                  context.source.sendFeedback({ Text.of("Cleared target!") }, false)
                   return@executes 1
                 } else {
-                  context.source.sendError(Text.translatable("command.target.not_mob"))
+                  context.source.sendError(Text.of("Must be a hostile mob!"))
                   return@executes 0
                 }
               }

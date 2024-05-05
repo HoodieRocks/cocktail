@@ -31,10 +31,7 @@ object SetSlotCommand {
                 val slot = getInteger(context, "slot")
 
                 // send feedback
-                context.source.sendFeedback(
-                  { Text.translatable("command.setslot.success", slot) },
-                  false,
-                )
+                context.source.sendFeedback({ Text.of("Set slot to $slot!") }, false)
                 1
               }
             )
