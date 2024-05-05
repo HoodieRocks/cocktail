@@ -1,13 +1,13 @@
 package me.cobble.cocktail.config
 
 import com.google.gson.Gson
-import me.cobble.cocktail.Cocktail
-import net.fabricmc.loader.api.FabricLoader
 import kotlin.io.path.createFile
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeBytes
+import me.cobble.cocktail.Cocktail
+import net.fabricmc.loader.api.FabricLoader
 
 class ConfigIO {
   private val internalConfig = javaClass.classLoader.getResourceAsStream("config.jsonc")

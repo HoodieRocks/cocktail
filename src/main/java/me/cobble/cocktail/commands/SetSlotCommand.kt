@@ -19,22 +19,27 @@ object SetSlotCommand {
         .then(
           argument("player", player())
             .then(
-              argument("slot", integer(0, 8))
-                .executes { context: CommandContext<ServerCommandSource> ->
+              argument("slot", integer(0, 8)).executes {
+                context: CommandContext<ServerCommandSource> ->
 
-                  // get entity
-                  val player = getPlayer(context, "player")
-                  player.networkHandler.sendPacket(
-                    UpdateSelectedSlotS2CPacket(getInteger(context, "slot"))
-                  )
+                // get entity
+                val player = getPlayer(context, "player")
+                player.networkHandler.sendPacket(
+                  UpdateSelectedSlotS2CPacket(getInteger(context, "slot"))
+                )
 
-                  val slot = getInteger(context, "slot")
+                val slot = getInteger(context, "slot")
 
-                  // send feedback
-                  context.source.sendFeedback({ Text.translatable("command.setslot.success", slot) }, false)
-                  1
-                })
+                // send feedback
+                context.source.sendFeedback(
+                  { Text.translatable("command.setslot.success", slot) },
+                  false,
+                )
+                1
+              }
+            )
         )
-        .requires { source: ServerCommandSource -> source.hasPermissionLevel(2) })
+        .requires { source: ServerCommandSource -> source.hasPermissionLevel(2) }
+    )
   }
 }

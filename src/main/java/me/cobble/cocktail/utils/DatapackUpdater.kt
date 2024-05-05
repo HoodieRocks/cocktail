@@ -1,10 +1,5 @@
 package me.cobble.cocktail.utils
 
-import me.cobble.cocktail.Cocktail
-import me.cobble.cocktail.config.Config
-import net.minecraft.server.MinecraftServer
-import net.minecraft.util.WorldSavePath
-import org.slf4j.Logger
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -22,18 +17,22 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
+import me.cobble.cocktail.Cocktail
+import me.cobble.cocktail.config.Config
+import net.minecraft.server.MinecraftServer
+import net.minecraft.util.WorldSavePath
+import org.slf4j.Logger
 
 class DatapackUpdater(server: MinecraftServer) {
   private val datapackPath: Path = server.getSavePath(WorldSavePath.DATAPACKS)
   private val log: Logger = Cocktail.logger
-  private val client: HttpClient = HttpClient.newBuilder()
-    .version(HttpClient.Version.HTTP_2)
-    .followRedirects(HttpClient.Redirect.ALWAYS)
-    .build()
+  private val client: HttpClient =
+    HttpClient.newBuilder()
+      .version(HttpClient.Version.HTTP_2)
+      .followRedirects(HttpClient.Redirect.ALWAYS)
+      .build()
 
-  /**
-   * Runs the datapack updater process.
-   */
+  /** Runs the datapack updater process. */
   fun run() {
     val config = Config.get()
 
@@ -48,14 +47,14 @@ class DatapackUpdater(server: MinecraftServer) {
     try {
       // Process each datapack URL
       config.datapackUrls.entries.forEach { (packName, packUrl) ->
-
         log.info("Downloading [{}]", packName)
         // Create HTTP request for the pack URL
-        val request = HttpRequest.newBuilder()
-          .uri(URI.create(packUrl))
-          .GET()
-          .timeout(Duration.ofSeconds(30))
-          .build()
+        val request =
+          HttpRequest.newBuilder()
+            .uri(URI.create(packUrl))
+            .GET()
+            .timeout(Duration.ofSeconds(30))
+            .build()
 
         // Send the HTTP request and get the response
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
@@ -128,7 +127,7 @@ class DatapackUpdater(server: MinecraftServer) {
    * Unzips a file to a destination directory.
    *
    * @param destinationDir The directory to unzip the file to.
-   * @param zis     The ZipInputStream containing the file to unzip.
+   * @param zis The ZipInputStream containing the file to unzip.
    * @throws IOException If an I/O error occurs while unzipping the file.
    */
   @Throws(IOException::class)
@@ -183,7 +182,8 @@ class DatapackUpdater(server: MinecraftServer) {
         }
         Files.walk(tempDir).use { walk ->
           // Sort the files in reverse order and delete each file
-          walk.sorted(Comparator.reverseOrder())
+          walk
+            .sorted(Comparator.reverseOrder())
             .map { obj: Path -> obj.toFile() }
             .forEach { obj: File -> obj.delete() }
         }
@@ -202,18 +202,22 @@ class DatapackUpdater(server: MinecraftServer) {
         // Move the resources file out of the root directory
         val targetResourcesFile = targetFile.resolve(file.name)
         log.info("Moving {} to {}", targetResourcesFile, destinationDir)
-        Files.move(targetResourcesFile, destinationDir.resolve(file.name), StandardCopyOption.REPLACE_EXISTING)
+        Files.move(
+          targetResourcesFile,
+          destinationDir.resolve(file.name),
+          StandardCopyOption.REPLACE_EXISTING,
+        )
       }
     }
   }
 
   /**
-   * This method moves the contents of a directory to its parent directory.
-   * If the parent directory already contains a directory, it will replace the old one.
-   * If the parent directory does not contain a directory, it will create one.
+   * This method moves the contents of a directory to its parent directory. If the parent directory
+   * already contains a directory, it will replace the old one. If the parent directory does not
+   * contain a directory, it will create one.
    *
    * @param targetFile The file to be deleted if the contents of the directory cannot be moved.
-   * @param destinationDir    The directory whose contents will be moved to its parent directory.
+   * @param destinationDir The directory whose contents will be moved to its parent directory.
    * @throws IOException If an I/O error occurs when deleting or moving files.
    */
   @Throws(IOException::class)

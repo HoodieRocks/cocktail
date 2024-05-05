@@ -11,9 +11,7 @@ import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
-/**
- * Handles target related commands.
- */
+/** Handles target related commands. */
 object TargetCommand {
   /**
    * Registers the "target" command with the dispatcher.
@@ -28,58 +26,55 @@ object TargetCommand {
             .then(
               literal("set")
                 .then(
-                  argument("target", entity())
-                    .executes { context: CommandContext<ServerCommandSource> ->
+                  argument("target", entity()).executes {
+                    context: CommandContext<ServerCommandSource> ->
 
-                      // get entity
-                      val entity = getEntity(context, "entity")
-                      val target = getEntity(context, "target")
+                    // get entity
+                    val entity = getEntity(context, "entity")
+                    val target = getEntity(context, "target")
 
-                      if (target !is LivingEntity) {
-                        context
-                          .source
-                          .sendError(Text.translatable("command.target.not_alive"))
-                        return@executes 0
-                      }
-                      if (entity is MobEntity) {
-                        // set target
-                        entity.target = target
-                        context
-                          .source
-                          .sendFeedback(
-                            { Text.translatable("command.target.success.set", target.getDisplayName()) },
-                            false
-                          )
-                        return@executes 1
-                      } else {
-                        context
-                          .source
-                          .sendError(Text.translatable("command.target.not_mob"))
-                        return@executes 0
-                      }
-                    })
+                    if (target !is LivingEntity) {
+                      context.source.sendError(Text.translatable("command.target.not_alive"))
+                      return@executes 0
+                    }
+                    if (entity is MobEntity) {
+                      // set target
+                      entity.target = target
+                      context.source.sendFeedback(
+                        {
+                          Text.translatable("command.target.success.set", target.getDisplayName())
+                        },
+                        false,
+                      )
+                      return@executes 1
+                    } else {
+                      context.source.sendError(Text.translatable("command.target.not_mob"))
+                      return@executes 0
+                    }
+                  }
+                )
             )
             .then(
-              literal("clear")
-                .executes { context: CommandContext<ServerCommandSource> ->
+              literal("clear").executes { context: CommandContext<ServerCommandSource> ->
 
-                  // get entity
-                  val entity = getEntity(context, "entity")
-                  if (entity is MobEntity) {
-                    // clear target
-                    entity.target = null
-                    context
-                      .source
-                      .sendFeedback({ Text.translatable("command.target.success.clear") }, false)
-                    return@executes 1
-                  } else {
-                    context
-                      .source
-                      .sendError(Text.translatable("command.target.not_mob"))
-                    return@executes 0
-                  }
-                })
+                // get entity
+                val entity = getEntity(context, "entity")
+                if (entity is MobEntity) {
+                  // clear target
+                  entity.target = null
+                  context.source.sendFeedback(
+                    { Text.translatable("command.target.success.clear") },
+                    false,
+                  )
+                  return@executes 1
+                } else {
+                  context.source.sendError(Text.translatable("command.target.not_mob"))
+                  return@executes 0
+                }
+              }
+            )
         )
-        .requires { source: ServerCommandSource -> source.hasPermissionLevel(2) })
+        .requires { source: ServerCommandSource -> source.hasPermissionLevel(2) }
+    )
   }
 }

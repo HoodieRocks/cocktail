@@ -30,7 +30,10 @@ class CocktailServer : DedicatedServerModInitializer {
     fun sideAgnosticInitialize() {
       log.info("Loading commands...")
 
-      CommandRegistrationCallback.EVENT.register { dispatcher: CommandDispatcher<ServerCommandSource>, _, _ ->
+      CommandRegistrationCallback.EVENT.register {
+        dispatcher: CommandDispatcher<ServerCommandSource>,
+        _,
+        _ ->
         VelocityCommand.register(dispatcher)
         TargetCommand.register(dispatcher)
         SetSlotCommand.register(dispatcher)
@@ -39,16 +42,20 @@ class CocktailServer : DedicatedServerModInitializer {
         HTTPCommand.register(dispatcher)
       }
 
-      ServerLifecycleEvents.SERVER_STARTING.register(ServerStarting { server: MinecraftServer ->
-        val updater = DatapackUpdater(server)
-        updater.run()
-      })
+      ServerLifecycleEvents.SERVER_STARTING.register(
+        ServerStarting { server: MinecraftServer ->
+          val updater = DatapackUpdater(server)
+          updater.run()
+        }
+      )
 
-      ServerLifecycleEvents.SERVER_STARTED.register(ServerStarted { server: MinecraftServer ->
-        // Ask server to reload data
-        log.info("Reloading datapacks...")
-        server.commandManager.executeWithPrefix(server.commandSource, "reload")
-      })
+      ServerLifecycleEvents.SERVER_STARTED.register(
+        ServerStarted { server: MinecraftServer ->
+          // Ask server to reload data
+          log.info("Reloading datapacks...")
+          server.commandManager.executeWithPrefix(server.commandSource, "reload")
+        }
+      )
 
       log.info("Done!")
     }

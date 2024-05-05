@@ -4,12 +4,13 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.suggestion.SuggestionProvider
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import net.minecraft.server.command.ServerCommandSource
 import java.util.concurrent.CompletableFuture
+import net.minecraft.server.command.ServerCommandSource
 
 class AnimationsSuggestionProvider : SuggestionProvider<ServerCommandSource> {
   override fun getSuggestions(
-    context: CommandContext<ServerCommandSource?>, builder: SuggestionsBuilder
+    context: CommandContext<ServerCommandSource?>,
+    builder: SuggestionsBuilder,
   ): CompletableFuture<Suggestions> {
     builder.suggest("swing_main")
     builder.suggest("damage")

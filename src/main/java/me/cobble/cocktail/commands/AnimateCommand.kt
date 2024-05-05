@@ -13,9 +13,7 @@ import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 
-/**
- * Command to play animations on server players.
- */
+/** Command to play animations on server players. */
 object AnimateCommand {
   /**
    * Registers the 'animate' command with the server.
@@ -28,14 +26,14 @@ object AnimateCommand {
         .then(
           argument("entity", player())
             .then(
-              argument("animation", word())
-                .suggests(AnimationsSuggestionProvider())
-                .executes { context: CommandContext<ServerCommandSource> ->
+              argument("animation", word()).suggests(AnimationsSuggestionProvider()).executes {
+                context: CommandContext<ServerCommandSource> ->
 
-                  // get entity
-                  val player = getPlayer(context, "entity")
-                  val animation = getString(context, "animation")
-                  val animNumber = when (animation) {
+                // get entity
+                val player = getPlayer(context, "entity")
+                val animation = getString(context, "animation")
+                val animNumber =
+                  when (animation) {
                     "swing_main" -> 0
                     "damage" -> 1
                     "leave_bed" -> 2
@@ -47,15 +45,13 @@ object AnimateCommand {
                       return@executes 0
                     }
                   }
-                  player.networkHandler.sendPacket(
-                    EntityAnimationS2CPacket(player, animNumber)
-                  )
-                  context
-                    .source
-                    .sendFeedback({ Text.translatable("command.animate.success") }, false)
-                  1
-                })
+                player.networkHandler.sendPacket(EntityAnimationS2CPacket(player, animNumber))
+                context.source.sendFeedback({ Text.translatable("command.animate.success") }, false)
+                1
+              }
+            )
         )
-        .requires { source: ServerCommandSource -> source.hasPermissionLevel(2) })
+        .requires { source: ServerCommandSource -> source.hasPermissionLevel(2) }
+    )
   }
 }

@@ -13,11 +13,13 @@ object ComplimentCommand {
    * @param dispatcher The command dispatcher to register with.
    */
   fun register(dispatcher: CommandDispatcher<ServerCommandSource>) {
-    dispatcher.register(literal("compliment")
-      .executes { context: CommandContext<ServerCommandSource> ->
-        context.source.sendFeedback({ Text.translatable("command.compliment.compliment") }, false)
-        1
-      }
-      .requires { source: ServerCommandSource -> source.hasPermissionLevel(2) })
+    dispatcher.register(
+      literal("compliment")
+        .executes { context: CommandContext<ServerCommandSource> ->
+          context.source.sendFeedback({ Text.translatable("command.compliment.compliment") }, false)
+          1
+        }
+        .requires { source: ServerCommandSource -> source.hasPermissionLevel(2) }
+    )
   }
 }
