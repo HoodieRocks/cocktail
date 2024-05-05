@@ -24,11 +24,9 @@ object SetSlotCommand {
 
                 // get entity
                 val player = getPlayer(context, "player")
-                player.networkHandler.sendPacket(
-                  UpdateSelectedSlotS2CPacket(getInteger(context, "slot"))
-                )
-
                 val slot = getInteger(context, "slot")
+
+                player.networkHandler.sendPacket(UpdateSelectedSlotS2CPacket(slot))
 
                 // send feedback
                 context.source.sendFeedback({ Text.of("Set slot to $slot!") }, false)

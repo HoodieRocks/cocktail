@@ -1,7 +1,6 @@
 package me.cobble.cocktail.commands
 
 import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType.getString
@@ -56,9 +55,14 @@ object HTTPCommand {
   }
 
   private fun apply(context: CommandContext<ServerCommandSource>): Int {
-    val url = URI.create(getString(context, "url"))
+    val url = runCatching { URI.create(getString(context, "url")) }.getOrNull()
     val callback = getFunctions(context, "callback")
     val gson = Gson()
+
+    if (url == null) {
+      context.source.sendError(Text.of("Invalid URL!"))
+      return 0
+    }
 
     val request =
       HttpRequest.newBuilder()
@@ -108,7 +112,7 @@ object HTTPCommand {
     val jsonIterator = json.entrySet().iterator()
 
     while (jsonIterator.hasNext()) {
-      val entry: Map.Entry<String, JsonElement> = jsonIterator.next()
+      val entry = jsonIterator.next()
       val jsonElement = entry.value
       if (jsonElement.isJsonObject) {
         nbtCompound.put(entry.key, jsonToCompound(jsonElement.asJsonObject))

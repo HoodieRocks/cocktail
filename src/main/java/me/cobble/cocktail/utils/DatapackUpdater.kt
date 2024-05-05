@@ -1,6 +1,6 @@
 package me.cobble.cocktail.utils
 
-import java.io.BufferedOutputStream
+import it.unimi.dsi.fastutil.io.FastBufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -50,11 +50,19 @@ class DatapackUpdater(server: MinecraftServer) {
         log.info("Downloading [{}]", packName)
         // Create HTTP request for the pack URL
         val request =
-          HttpRequest.newBuilder()
-            .uri(URI.create(packUrl))
-            .GET()
-            .timeout(Duration.ofSeconds(30))
-            .build()
+          runCatching {
+              HttpRequest.newBuilder()
+                .uri(URI.create(packUrl))
+                .GET()
+                .timeout(Duration.ofSeconds(30))
+                .build()
+            }
+            .getOrNull()
+
+        if (request == null) {
+          log.error("Failed to create HTTP request for [{}]", packName)
+          return
+        }
 
         // Send the HTTP request and get the response
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
@@ -63,7 +71,7 @@ class DatapackUpdater(server: MinecraftServer) {
         val packFilePath = datapackPath.resolve("$packName.zip")
 
         // Download the pack file
-        BufferedOutputStream(FileOutputStream(packFilePath.toFile())).use { fos ->
+        FastBufferedOutputStream(FileOutputStream(packFilePath.toFile())).use { fos ->
           response.body().transferTo(fos)
         }
         log.info("Downloaded successfully!")
@@ -149,7 +157,7 @@ class DatapackUpdater(server: MinecraftServer) {
           throw IOException("Failed to create directory $parent")
         }
 
-        BufferedOutputStream(FileOutputStream(newFile)).use { fos ->
+        FastBufferedOutputStream(FileOutputStream(newFile)).use { fos ->
           var len: Int
           while ((zis.read(buffer).also { len = it }) > 0) {
             fos.write(buffer, 0, len)
