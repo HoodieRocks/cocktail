@@ -26,7 +26,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     // Uncomment the following line to enable the deprecated Fabric API modules.
-    modImplementation("net.fabricmc:fabric-language-kotlin:1.10.19+kotlin.1.9.23")
+    modImplementation("net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}")
 
     // Only exists so that IntelliJ won't yell about Kotlin not being set up.
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -36,12 +36,14 @@ processResources {
     inputs.property "version", project.version
     inputs.property "minecraft_version", project.minecraft_version
     inputs.property "loader_version", project.loader_version
+    inputs.property "fabric_kotlin_version", project.fabric_kotlin_version
     filteringCharset "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version,
                 "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version
+                "loader_version": project.loader_version,
+                "fabric_kotlin_version": project.fabric_kotlin_version
     }
 }
 

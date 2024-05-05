@@ -6,12 +6,13 @@
   "description": "A mod to extend the power of Datapacks",
   "authors": [
     "Cbble_",
+    "HoodieRocks",
     "Datapack-Hub"
   ],
   "contact": {
-    "repo": "https://github.com/Datapack-Hub/Cocktail"
+    "repo": "https://github.com/HoodieRocks/cocktail"
   },
-  "license": "GPL-3.0",
+  "license": "MIT",
   "icon": "assets/cocktail/icon.png",
   "environment": "*",
   "entrypoints": {
@@ -41,6 +42,6 @@
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${minecraft_version}",
-    "fabric-language-kotlin": ">=1.10.19+kotlin.1.9.23"
+    "fabric-language-kotlin": ">=${fabric_kotlin_version}"
   }
 }

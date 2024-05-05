@@ -44,63 +44,57 @@ class DatapackUpdater(server: MinecraftServer) {
 
     log.info("Starting datapack updater...")
 
-    try {
-      // Process each datapack URL
-      config.datapackUrls.entries.forEach { (packName, packUrl) ->
-        log.info("Downloading [{}]", packName)
-        // Create HTTP request for the pack URL
-        val request =
-          runCatching {
-              HttpRequest.newBuilder()
-                .uri(URI.create(packUrl))
-                .GET()
-                .timeout(Duration.ofSeconds(30))
-                .build()
-            }
-            .getOrNull()
+    // Process each datapack URL
+    config.datapackUrls.entries.forEach { (packName, packUrl) ->
+      log.info("Downloading [{}]", packName)
+      // Create HTTP request for the pack URL
+      val request =
+        runCatching {
+            HttpRequest.newBuilder()
+              .uri(URI.create(packUrl))
+              .GET()
+              .timeout(Duration.ofSeconds(30))
+              .build()
+          }
+          .getOrNull()
 
-        if (request == null) {
-          log.error("Failed to create HTTP request for [{}]", packName)
-          return
-        }
-
-        // Send the HTTP request and get the response
-        val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
-
-        // Define the file path to save the downloaded pack
-        val packFilePath = datapackPath.resolve("$packName.zip")
-
-        // Download the pack file
-        FastBufferedOutputStream(FileOutputStream(packFilePath.toFile())).use { fos ->
-          response.body().transferTo(fos)
-        }
-        log.info("Downloaded successfully!")
-
-        // Check for nested folders in the downloaded pack
-        if (config.packDownloader.checkForNestedFolders) {
-          log.info("Initializing nested folder check for [{}]", packName)
-          log.info("[NFC] Unzipping {}", packName)
-          val tempDir = unzip(packFilePath)
-
-          // Move resources to the root directory
-          log.info("[NFC] Moving resources to root...")
-          moveResourcesIfFound(tempDir, datapackPath)
-
-          // Delete nested folders if needed
-          log.info("[NFC] Deleting nested folders (if needed)...")
-          cleanNoNestingCopies(tempDir)
-
-          // Move contents to the root directory
-          log.info("[NFC] Moving contents to root...")
-          moveContentsToParent(tempDir, datapackPath.resolve(packName))
-
-          log.info("[NFC] Check completed!")
-        }
+      if (request == null) {
+        log.error("Failed to create HTTP request for [{}]", packName)
+        return
       }
-    } catch (e: IOException) {
-      log.error("Failed to update datapacks", e)
-    } catch (e: InterruptedException) {
-      log.error("Failed to update datapacks", e)
+
+      // Send the HTTP request and get the response
+      val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
+
+      // Define the file path to save the downloaded pack
+      val packFilePath = datapackPath.resolve("$packName.zip")
+
+      // Download the pack file
+      FastBufferedOutputStream(FileOutputStream(packFilePath.toFile())).use { fos ->
+        response.body().transferTo(fos)
+      }
+      log.info("Downloaded successfully!")
+
+      // Check for nested folders in the downloaded pack
+      if (config.packDownloader.checkForNestedFolders) {
+        log.info("Initializing nested folder check for [{}]", packName)
+        log.info("Unzipping {}", packName)
+        val tempDir = unzip(packFilePath)
+
+        // Move resources to the root directory
+        log.info("Moving resources to root...")
+        moveResourcesIfFound(tempDir, datapackPath)
+
+        // Delete nested folders if needed
+        log.info("Deleting nested folders (if needed)...")
+        cleanNoNestingCopies(tempDir)
+
+        // Move contents to the root directory
+        log.info("Moving contents to root...")
+        moveContentsToParent(tempDir, datapackPath.resolve(packName))
+
+        log.info("Check completed!")
+      }
     }
   }
 
@@ -117,14 +111,14 @@ class DatapackUpdater(server: MinecraftServer) {
     // Create the temporary directory path
     val destinationDir = datapackPath.resolve("$packName-temp")
 
-    try {
+    runCatching {
       // Open the zip file and unzip it to the temporary directory
       ZipInputStream(FileInputStream(packZip.toFile())).use { zis ->
         unzipFile(destinationDir, zis)
       }
-    } catch (e: IOException) {
+    }.getOrElse {
       // Log an error if an I/O exception occurs while unzipping the file
-      log.error("An error occurred while unzipping {}", packName, e)
+      log.error("An error occurred while unzipping {}", packName, it)
     }
 
     // Return the path to the temporary directory
@@ -139,15 +133,15 @@ class DatapackUpdater(server: MinecraftServer) {
    * @throws IOException If an I/O error occurs while unzipping the file.
    */
   @Throws(IOException::class)
-  fun unzipFile(destinationDir: Path, zis: ZipInputStream) {
+  private fun unzipFile(destinationDir: Path, zis: ZipInputStream) {
     // Buffer for reading the zip file
     val buffer = ByteArray(4096)
 
-    var ze = zis.nextEntry
-    while (ze != null) {
-      val newFile = newFile(destinationDir.toFile(), ze)
+    var zipEntry = zis.nextEntry
+    while (zipEntry != null) {
+      val newFile = newFile(destinationDir.toFile(), zipEntry)
 
-      if (ze.isDirectory) {
+      if (zipEntry.isDirectory) {
         if (!newFile.isDirectory && !newFile.mkdirs()) {
           throw IOException("Failed to create directory $newFile")
         }
@@ -166,7 +160,7 @@ class DatapackUpdater(server: MinecraftServer) {
       }
 
       // Get the next entry in the zip file
-      ze = zis.nextEntry
+      zipEntry = zis.nextEntry
     }
   }
 
@@ -200,7 +194,7 @@ class DatapackUpdater(server: MinecraftServer) {
   }
 
   @Throws(IOException::class)
-  fun moveResourcesIfFound(targetFile: Path, destinationDir: Path) {
+  private fun moveResourcesIfFound(targetFile: Path, destinationDir: Path) {
     // Get the list of files in the directory
     val dirs = targetFile.toFile().listFiles() ?: return
 
@@ -231,7 +225,6 @@ class DatapackUpdater(server: MinecraftServer) {
   @Throws(IOException::class)
   private fun moveContentsToParent(targetFile: Path, destinationDir: Path) {
     // Get the list of files in the directory
-
     val dirs = targetFile.toFile().listFiles()
 
     // Check if the directory contains exactly one subdirectory
@@ -242,18 +235,15 @@ class DatapackUpdater(server: MinecraftServer) {
       Files.move(targetSubDir, destinationDir, StandardCopyOption.REPLACE_EXISTING)
     }
   }
+  @Throws(IOException::class)
+  private fun newFile(destinationDir: File, zipEntry: ZipEntry): File {
+    val file = File(destinationDir, zipEntry.name)
+    val dirPath = destinationDir.canonicalPath
+    val filePath = file.canonicalPath
 
-  companion object {
-    @Throws(IOException::class)
-    private fun newFile(destinationDir: File, zipEntry: ZipEntry): File {
-      val file = File(destinationDir, zipEntry.name)
-      val dirPath = destinationDir.canonicalPath
-      val filePath = file.canonicalPath
-
-      if (!filePath.startsWith(dirPath + File.separator)) {
-        throw IOException("Entry is outside of the target dir: " + zipEntry.name)
-      }
-      return file
+    if (!filePath.startsWith(dirPath + File.separator)) {
+      throw IOException("Entry is outside of the target dir: " + zipEntry.name)
     }
+    return file
   }
 }
