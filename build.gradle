@@ -87,4 +87,5 @@ detekt {
 
 ktfmt {
     googleStyle()
+    // kotlinLangStyle()
 }

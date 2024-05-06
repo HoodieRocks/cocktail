@@ -41,7 +41,7 @@ object TargetCommand {
                       // set target
                       entity.target = target
                       context.source.sendFeedback(
-                        { Text.of("Set target to ${target.displayName}!") },
+                        { Text.literal("Targeting ").append(target.displayName).append("!") },
                         false,
                       )
                       return@executes 1

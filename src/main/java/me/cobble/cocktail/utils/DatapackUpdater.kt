@@ -112,14 +112,15 @@ class DatapackUpdater(server: MinecraftServer) {
     val destinationDir = datapackPath.resolve("$packName-temp")
 
     runCatching {
-      // Open the zip file and unzip it to the temporary directory
-      ZipInputStream(FileInputStream(packZip.toFile())).use { zis ->
-        unzipFile(destinationDir, zis)
+        // Open the zip file and unzip it to the temporary directory
+        ZipInputStream(FileInputStream(packZip.toFile())).use { zis ->
+          unzipFile(destinationDir, zis)
+        }
       }
-    }.getOrElse {
-      // Log an error if an I/O exception occurs while unzipping the file
-      log.error("An error occurred while unzipping {}", packName, it)
-    }
+      .getOrElse {
+        // Log an error if an I/O exception occurs while unzipping the file
+        log.error("An error occurred while unzipping {}", packName, it)
+      }
 
     // Return the path to the temporary directory
     return destinationDir
@@ -235,6 +236,7 @@ class DatapackUpdater(server: MinecraftServer) {
       Files.move(targetSubDir, destinationDir, StandardCopyOption.REPLACE_EXISTING)
     }
   }
+
   @Throws(IOException::class)
   private fun newFile(destinationDir: File, zipEntry: ZipEntry): File {
     val file = File(destinationDir, zipEntry.name)

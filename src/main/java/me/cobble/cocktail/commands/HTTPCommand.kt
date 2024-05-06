@@ -55,14 +55,9 @@ object HTTPCommand {
   }
 
   private fun apply(context: CommandContext<ServerCommandSource>): Int {
-    val url = runCatching { URI.create(getString(context, "url")) }.getOrNull()
+    val url = URI.create(getString(context, "url"))
     val callback = getFunctions(context, "callback")
     val gson = Gson()
-
-    if (url == null) {
-      context.source.sendError(Text.of("Invalid URL!"))
-      return 0
-    }
 
     val request =
       HttpRequest.newBuilder()
