@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType.getString
 import com.mojang.brigadier.arguments.StringArgumentType.word
 import com.mojang.brigadier.context.CommandContext
-import me.cobble.cocktail.commands.utils.AnimationsSuggestionProvider
+import me.cobble.cocktail.commands.utils.AnimateCommandSuggestions
 import net.minecraft.command.argument.EntityArgumentType.getPlayer
 import net.minecraft.command.argument.EntityArgumentType.player
 import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket
@@ -26,7 +26,7 @@ object AnimateCommand {
         .then(
           argument("entity", player())
             .then(
-              argument("animation", word()).suggests(AnimationsSuggestionProvider()).executes {
+              argument("animation", word()).suggests(AnimateCommandSuggestions()).executes {
                 context: CommandContext<ServerCommandSource> ->
 
                 // get entity
