@@ -1,8 +1,10 @@
 plugins {
     id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'org.jetbrains.kotlin.jvm'
+    id "co.uzzu.dotenv.gradle" version "4.0.0"
     id("io.gitlab.arturbosch.detekt").version("1.23.6")
     id("com.ncorti.ktfmt.gradle") version "0.18.0"
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 version = project.mod_version
@@ -14,6 +16,7 @@ base {
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
@@ -86,5 +89,20 @@ detekt {
 }
 
 ktfmt {
+    maxWidth.set(100)
+    removeUnusedImports.set(true)
+
     googleStyle()
+}
+
+modrinth {
+    token = env.fetch('MODRINTH_TOKEN') // Please use an environment variable for this! The default is `$MODRINTH_TOKEN`.
+    projectId = 'DjukVYJk' // The ID of your Modrinth project. Slugs will not work.
+    versionNumber = project.mod_version // The (preferably SemVer) version of the mod. If not specified, it'll use the `version` declaration
+    uploadFile = remapJar // Tells Minotaur to use the remapped jar
+    gameVersions = [project.minecraft_version] // An array of game versions the version supports
+    loaders = ['fabric'] // Self-explanatory.
+    dependencies = [
+            required.project("fabric-api")
+    ]
 }
