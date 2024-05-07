@@ -96,7 +96,7 @@ ktfmt {
 }
 
 modrinth {
-    token = env.fetch('MODRINTH_TOKEN') // Please use an environment variable for this! The default is `$MODRINTH_TOKEN`.
+    token = env.fetchOrNull('MODRINTH_TOKEN') // Please use an environment variable for this! The default is `$MODRINTH_TOKEN`.
     projectId = 'DjukVYJk' // The ID of your Modrinth project. Slugs will not work.
     versionNumber = project.mod_version // The (preferably SemVer) version of the mod. If not specified, it'll use the `version` declaration
     uploadFile = remapJar // Tells Minotaur to use the remapped jar
