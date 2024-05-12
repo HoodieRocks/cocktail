@@ -85,7 +85,7 @@ kotlin {
 detekt {
     buildUponDefaultConfig = true // preconfigure defaults
     allRules = false // activate all available (even unstable) rules.
-    config = files("detekt.yml") // point to your custom config defining rules to run, overwriting default behavior
+    config.from(files("detekt.yml")) // point to your custom config defining rules to run, overwriting default behavior
 }
 
 ktfmt {

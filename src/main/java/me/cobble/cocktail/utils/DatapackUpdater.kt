@@ -135,33 +135,27 @@ class DatapackUpdater(server: MinecraftServer) {
    */
   @Throws(IOException::class)
   private fun unzipFile(destinationDir: Path, zis: ZipInputStream) {
-    // Buffer for reading the zip file
     val buffer = ByteArray(4096)
 
-    var zipEntry = zis.nextEntry
-    while (zipEntry != null) {
-      val newFile = newFile(destinationDir.toFile(), zipEntry)
+    var entry = zis.nextEntry
+    while (entry != null) {
+      val newEntry = newFile(destinationDir.toFile(), entry)
 
-      if (zipEntry.isDirectory) {
-        if (!newFile.isDirectory && !newFile.mkdirs()) {
-          throw IOException("Failed to create directory $newFile")
-        }
+      if (entry.isDirectory) {
+        if (!newEntry.isDirectory && !newEntry.mkdirs()) throw IOException("Failed to create directory $newEntry")
       } else {
-        val parent = newFile.parentFile
-        if (!parent.isDirectory && !parent.mkdirs()) {
-          throw IOException("Failed to create directory $parent")
-        }
+        val parentDir = newEntry.parentFile
+        if (!parentDir.isDirectory && !parentDir.mkdirs()) throw IOException("Failed to create directory $parentDir")
 
-        FastBufferedOutputStream(FileOutputStream(newFile)).use { fos ->
-          var len: Int
-          while ((zis.read(buffer).also { len = it }) > 0) {
-            fos.write(buffer, 0, len)
+        FastBufferedOutputStream(FileOutputStream(newEntry)).use { outputStream ->
+          var length: Int
+          while ((zis.read(buffer).also { length = it }) > 0) {
+            outputStream.write(buffer, 0, length)
           }
         }
       }
 
-      // Get the next entry in the zip file
-      zipEntry = zis.nextEntry
+      entry = zis.nextEntry
     }
   }
 
@@ -176,20 +170,21 @@ class DatapackUpdater(server: MinecraftServer) {
       if (dirs == null || dirs.count() <= 1) {
         return
       }
-      Files.list(datapackPath).use { allPacks ->
-        val fileName = tempDir.nameWithoutExtension
-        val compressedFileName = fileName.dropLast(5) + ".zip"
-        log.info("Cleaning up {}", compressedFileName)
-        if (allPacks.noneMatch { f: Path -> f.name == compressedFileName }) {
-          return
-        }
-        Files.walk(tempDir).use { walk ->
-          // Sort the files in reverse order and delete each file
-          walk
-            .sorted(Comparator.reverseOrder())
-            .map { obj: Path -> obj.toFile() }
-            .forEach { obj: File -> obj.delete() }
-        }
+    }
+
+    Files.list(datapackPath).use { allPacks ->
+      val fileName = tempDir.nameWithoutExtension
+      val compressedFileName = fileName.dropLast(5) + ".zip"
+      log.info("Cleaning up {}", compressedFileName)
+      if (allPacks.noneMatch { f: Path -> f.name == compressedFileName }) {
+        return
+      }
+      Files.walk(tempDir).use { walk ->
+        // Sort the files in reverse order and delete each file
+        walk
+          .sorted(Comparator.reverseOrder())
+          .map { obj: Path -> obj.toFile() }
+          .forEach { obj: File -> obj.delete() }
       }
     }
   }
