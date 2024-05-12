@@ -15,6 +15,8 @@ import java.nio.file.StandardCopyOption
 import java.time.Duration
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+import kotlin.io.path.createDirectories
+import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 import me.cobble.cocktail.Cocktail
@@ -30,6 +32,7 @@ class DatapackUpdater(server: MinecraftServer) {
     HttpClient.newBuilder()
       .version(HttpClient.Version.HTTP_2)
       .followRedirects(HttpClient.Redirect.ALWAYS)
+      .connectTimeout(Duration.ofSeconds(10))
       .build()
 
   /** Runs the datapack updater process. */
@@ -62,18 +65,17 @@ class DatapackUpdater(server: MinecraftServer) {
         log.error("Failed to create HTTP request for [{}]", packName)
         return
       }
-
-      // Send the HTTP request and get the response
-      val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
-
       // Define the file path to save the downloaded pack
       val packFilePath = datapackPath.resolve("$packName.zip")
 
-      // Download the pack file
-      FastBufferedOutputStream(FileOutputStream(packFilePath.toFile())).use { fos ->
-        response.body().transferTo(fos)
+      // Send the HTTP request and get the response
+      client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply {
+        // Download the pack file
+        FastBufferedOutputStream(FileOutputStream(packFilePath.toFile())).use { fos ->
+          it.body().transferTo(fos)
+        }
+        log.info("Downloaded successfully!")
       }
-      log.info("Downloaded successfully!")
 
       // Check for nested folders in the downloaded pack
       if (config.packDownloader.checkForNestedFolders) {
@@ -140,19 +142,31 @@ class DatapackUpdater(server: MinecraftServer) {
 
     var zipEntry = zis.nextEntry
     while (zipEntry != null) {
-      val newFile = newFile(destinationDir.toFile(), zipEntry)
+      val newFile = newFile(destinationDir, zipEntry)
 
       if (zipEntry.isDirectory) {
-        if (!newFile.isDirectory && !newFile.mkdirs()) {
-          throw IOException("Failed to create directory $newFile")
-        }
-      } else {
-        val parent = newFile.parentFile
-        if (!parent.isDirectory && !parent.mkdirs()) {
-          throw IOException("Failed to create directory $parent")
-        }
 
-        FastBufferedOutputStream(FileOutputStream(newFile)).use { fos ->
+        newFile
+          .runCatching {
+            if (!newFile.isDirectory()) {
+              throw IOException("Failed to create directory $newFile")
+            }
+            newFile.createDirectories()
+          }
+          .getOrElse { log.error("Failed to create directory $newFile") }
+      } else {
+        val parent = newFile.parent
+
+        parent
+          .runCatching {
+            if (!parent.isDirectory()) {
+              throw IOException("Failed to create directory $parent")
+            }
+            parent.createDirectories()
+          }
+          .getOrElse { log.error("Failed to create parent directory $parent") }
+
+        FastBufferedOutputStream(FileOutputStream(newFile.toFile())).use { fos ->
           var len: Int
           while ((zis.read(buffer).also { len = it }) > 0) {
             fos.write(buffer, 0, len)
@@ -172,24 +186,25 @@ class DatapackUpdater(server: MinecraftServer) {
    */
   private fun cleanNoNestingCopies(tempDir: Path) {
     // Get the list of files in the temporary directory
-    Files.list(tempDir).use { dirs ->
-      if (dirs == null || dirs.count() <= 1) {
+    Files.list(tempDir).parallel().use { dirs ->
+      if (dirs.count() <= 1) {
         return
       }
-      Files.list(datapackPath).use { allPacks ->
-        val fileName = tempDir.nameWithoutExtension
-        val compressedFileName = fileName.dropLast(5) + ".zip"
-        log.info("Cleaning up {}", compressedFileName)
-        if (allPacks.noneMatch { f: Path -> f.name == compressedFileName }) {
-          return
-        }
-        Files.walk(tempDir).use { walk ->
-          // Sort the files in reverse order and delete each file
-          walk
-            .sorted(Comparator.reverseOrder())
-            .map { obj: Path -> obj.toFile() }
-            .forEach { obj: File -> obj.delete() }
-        }
+    }
+
+    Files.list(datapackPath).use { allPacks ->
+      val fileName = tempDir.nameWithoutExtension
+      val compressedFileName = fileName.dropLast(5) + ".zip"
+      log.info("Cleaning up {}", compressedFileName)
+      if (allPacks.noneMatch { f: Path -> f.name == compressedFileName }) {
+        return
+      }
+      Files.walk(tempDir).use { walk ->
+        // Sort the files in reverse order and delete each file
+        walk
+          .sorted(Comparator.reverseOrder())
+          .map { obj: Path -> obj.toFile() }
+          .forEach { obj: File -> obj.delete() }
       }
     }
   }
@@ -238,12 +253,12 @@ class DatapackUpdater(server: MinecraftServer) {
   }
 
   @Throws(IOException::class)
-  private fun newFile(destinationDir: File, zipEntry: ZipEntry): File {
-    val file = File(destinationDir, zipEntry.name)
-    val dirPath = destinationDir.canonicalPath
-    val filePath = file.canonicalPath
+  private fun newFile(destinationDir: Path, zipEntry: ZipEntry): Path {
+    val file = destinationDir.resolve(zipEntry.name)
+    val dirPath = destinationDir.normalize().toRealPath()
+    val filePath = file.normalize().toRealPath()
 
-    if (!filePath.startsWith(dirPath + File.separator)) {
+    if (!filePath.startsWith(dirPath.resolve(File.separator))) {
       throw IOException("Entry is outside of the target dir: " + zipEntry.name)
     }
     return file
