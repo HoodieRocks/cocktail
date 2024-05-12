@@ -3,7 +3,10 @@ package me.cobble.cocktail.commands
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
-import net.minecraft.command.argument.EntityArgumentType.*
+import net.minecraft.command.argument.EntityArgumentType.entities
+import net.minecraft.command.argument.EntityArgumentType.entity
+import net.minecraft.command.argument.EntityArgumentType.getEntities
+import net.minecraft.command.argument.EntityArgumentType.getEntity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.mob.MobEntity
 import net.minecraft.server.command.CommandManager.argument

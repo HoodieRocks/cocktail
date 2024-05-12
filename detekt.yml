@@ -1,3 +1,6 @@
 style:
   MagicNumber:
     active: false
+complexity:
+  NestedBlockDepth:
+    active: false

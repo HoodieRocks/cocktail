@@ -1,11 +1,6 @@
 package me.cobble.cocktail.utils
 
 import it.unimi.dsi.fastutil.io.FastBufferedOutputStream
-import me.cobble.cocktail.Cocktail
-import me.cobble.cocktail.config.Config
-import net.minecraft.server.MinecraftServer
-import net.minecraft.util.WorldSavePath
-import org.slf4j.Logger
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -20,10 +15,13 @@ import java.nio.file.StandardCopyOption
 import java.time.Duration
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
-import kotlin.io.path.createDirectories
-import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
+import me.cobble.cocktail.Cocktail
+import me.cobble.cocktail.config.Config
+import net.minecraft.server.MinecraftServer
+import net.minecraft.util.WorldSavePath
+import org.slf4j.Logger
 
 class DatapackUpdater(server: MinecraftServer) {
   private val datapackPath: Path = server.getSavePath(WorldSavePath.DATAPACKS)
@@ -69,13 +67,16 @@ class DatapackUpdater(server: MinecraftServer) {
       val packFilePath = datapackPath.resolve("$packName.zip")
 
       // Send the HTTP request and get the response
-      client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream()).thenApply {
-        // Download the pack file
-        FastBufferedOutputStream(FileOutputStream(packFilePath.toFile())).use { fos ->
-          it.body().transferTo(fos)
+      client
+        .sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
+        .thenApply {
+          // Download the pack file
+          FastBufferedOutputStream(FileOutputStream(packFilePath.toFile())).use { fos ->
+            it.body().transferTo(fos)
+          }
+          log.info("Downloaded successfully!")
         }
-        log.info("Downloaded successfully!")
-      }.join()
+        .join()
 
       // Check for nested folders in the downloaded pack
       if (config.packDownloader.checkForNestedFolders) {
@@ -138,20 +139,20 @@ class DatapackUpdater(server: MinecraftServer) {
   @Throws(IOException::class)
   private fun unzipFile(destinationDir: Path, zis: ZipInputStream) {
     val buffer = ByteArray(4096)
-    
+
     var entry = zis.nextEntry
     while (entry != null) {
-      val newEntry = newFile(destinationDir, entry)
+      val newEntry = newFile(destinationDir.toFile(), entry)
 
       if (entry.isDirectory) {
-        newEntry.createDirectories()
-        if (!newEntry.isDirectory()) throw IOException("Failed to create directory $newEntry")
+        if (!newEntry.isDirectory && !newEntry.mkdirs())
+          throw IOException("Failed to create directory $newEntry")
       } else {
-        val parentDir = newEntry.parent
-        parentDir.createDirectories()
-        if (!parentDir.isDirectory()) throw IOException("Failed to create directory $parentDir")
+        val parentDir = newEntry.parentFile
+        if (!parentDir.isDirectory && !parentDir.mkdirs())
+          throw IOException("Failed to create directory $parentDir")
 
-        FastBufferedOutputStream(FileOutputStream(newEntry.toFile())).use { outputStream ->
+        FastBufferedOutputStream(FileOutputStream(newEntry)).use { outputStream ->
           var length: Int
           while ((zis.read(buffer).also { length = it }) > 0) {
             outputStream.write(buffer, 0, length)
@@ -237,12 +238,12 @@ class DatapackUpdater(server: MinecraftServer) {
   }
 
   @Throws(IOException::class)
-  private fun newFile(destinationDir: Path, zipEntry: ZipEntry): Path {
-    val file = destinationDir.resolve(zipEntry.name)
-    val dirPath = destinationDir.normalize().toRealPath()
-    val filePath = file.normalize().toRealPath()
+  private fun newFile(destinationDir: File, zipEntry: ZipEntry): File {
+    val file = File(destinationDir, zipEntry.name)
+    val dirPath = destinationDir.canonicalPath
+    val filePath = file.canonicalPath
 
-    if (!filePath.startsWith(dirPath.resolve(File.separator))) {
+    if (!filePath.startsWith(dirPath + File.separator)) {
       throw IOException("Entry is outside of the target dir: " + zipEntry.name)
     }
     return file
