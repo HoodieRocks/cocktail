@@ -1,9 +1,11 @@
 package me.cobble.cocktail.config
 
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import kotlin.io.path.createFile
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.exists
+import kotlin.io.path.moveTo
 import kotlin.io.path.readText
 import kotlin.io.path.writeBytes
 import me.cobble.cocktail.Cocktail
@@ -37,7 +39,17 @@ class ConfigIO {
     }
 
     val configContent = configPath.readText()
-    val configData = gson.fromJson(configContent, ConfigData::class.java)
+    val configData: ConfigData
+
+    try {
+      configData = gson.fromJson(configContent, ConfigData::class.java)
+    } catch (e: JsonSyntaxException) {
+      logger.warn(e.stackTraceToString())
+      logger.warn("Config is malformed, attempting to recover...")
+      configPath.moveTo(configDir.resolve("config.bak.jsonc"))
+      createConfig()
+      return loadConfig()
+    }
 
     return configData
   }

@@ -1,9 +1,9 @@
 plugins {
-    id 'fabric-loom' version '1.6-SNAPSHOT'
+    id 'fabric-loom' version '1.8-SNAPSHOT'
     id 'org.jetbrains.kotlin.jvm'
     id "co.uzzu.dotenv.gradle" version "4.0.0"
-    id("io.gitlab.arturbosch.detekt").version("1.23.6")
-    id("com.ncorti.ktfmt.gradle") version "0.18.0"
+    id("io.gitlab.arturbosch.detekt").version("1.23.7")
+    id("com.ncorti.ktfmt.gradle") version "0.21.0"
     id "com.modrinth.minotaur" version "2.+"
 }
 
@@ -102,7 +102,8 @@ modrinth {
     uploadFile = remapJar // Tells Minotaur to use the remapped jar
     gameVersions = [project.minecraft_version] // An array of game versions the version supports
     loaders = ['fabric'] // Self-explanatory.
-    dependencies = [
-            required.project("fabric-api")
-    ]
+    dependencies {
+        required.project("fabric-api")
+        required.project("fabric-language-kotlin")
+    }
 }

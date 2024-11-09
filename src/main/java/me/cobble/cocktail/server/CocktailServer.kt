@@ -7,6 +7,7 @@ import me.cobble.cocktail.commands.ComplimentCommand
 import me.cobble.cocktail.commands.HTTPCommand
 import me.cobble.cocktail.commands.SetSlotCommand
 import me.cobble.cocktail.commands.TargetCommand
+import me.cobble.cocktail.commands.TimezoneCommand
 import me.cobble.cocktail.commands.VelocityCommand
 import me.cobble.cocktail.utils.DatapackUpdater
 import net.fabricmc.api.DedicatedServerModInitializer
@@ -40,6 +41,7 @@ class CocktailServer : DedicatedServerModInitializer {
         AnimateCommand.register(dispatcher)
         ComplimentCommand.register(dispatcher)
         HTTPCommand.register(dispatcher)
+        TimezoneCommand.register(dispatcher)
       }
 
       ServerLifecycleEvents.SERVER_STARTING.register(
